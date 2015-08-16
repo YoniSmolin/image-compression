@@ -15,7 +15,6 @@ using namespace std;
 
 void distortImage(const uchar* original, uchar* distorted, int rows, int columns)
 {
-	int countUnchanged = 0;
 	for (int row = 0; row < rows; row++)
 	{
 		for (int column = 0; column < columns; column++)
@@ -26,8 +25,6 @@ void distortImage(const uchar* original, uchar* distorted, int rows, int columns
 				distorted[index] = difference + original[index] > 255 ? 255 : original[index] + difference;
 			else
 				distorted[index] = difference > original[index] ? 0 : original[index] - difference;
-			if (distorted[index] == original[index])
-				countUnchanged++;
 		}
 	}
 }
@@ -49,10 +46,8 @@ int main()
 	Compressor compressor(IMAGE_SIZE, IMAGE_SIZE);
 
 	char* compressed = NULL;
-	int compessedLength = compressor.CompressMatrix(distorted, image.data, compressed);
-	compressor.DecompressMatrix(distorted, compressed, uncompressed);
-
-	
+	int compessedLength = compressor.CompressImage(distorted, image.data, compressed);
+	compressor.DecompressImage(distorted, compressed, uncompressed);
 	
 	bool imagesAreEqual = true;
 	for (int row = 0; row < IMAGE_SIZE; row++)

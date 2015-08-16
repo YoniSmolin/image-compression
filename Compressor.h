@@ -15,7 +15,7 @@ class CompressionError : public std::exception
 {
 	virtual const char* what() const throw()
 	{
-		return "Encountered a difference larger than 32 [cm] in absolute value.";
+		return "Overflow - found a pixel with difference greater than 32[cm]";
 	}
 };
 
@@ -24,10 +24,11 @@ class Compressor
 public:
 	Compressor(int rows, int columns);
 
-	int CompressMatrix(const uchar* reference, const uchar* toCompress, char* &compressedDifference);
-	void DecompressMatrix(const uchar* reference, const char* compressedDifference, uchar* decompressed);
+	int CompressImage(const uchar* reference, const uchar* toBeCompressed, char* &compressed); // no need to allocate memory for toBeCompressed
+	void DecompressImage(const uchar* reference, const char* compressed, uchar* decompressed); // appropriate memory allocation for decompressed assumed
 
 	~Compressor();
+
 private:
 	int _rows, _columns;
 	char* _compressed;
