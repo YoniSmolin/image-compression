@@ -4,10 +4,16 @@
 
 #include "Compressor.h"
 
+#include <opencv2\highgui\highgui.hpp>
+
 #define BYTES_PER_PIXEL 3
 #define BYTES_FOR_HEADER 3
 #define BITS_IN_BYTE 8
 #define BITS_DEDICATED_TO_DIFFERENCE 6
+#define BYTE 8
+
+using namespace cv;
+using namespace std;
 
 Compressor::Compressor(int rows, int columns) : _rows(rows), _columns(columns) 
 {
@@ -78,4 +84,35 @@ void Compressor::DecompressImage(const uchar* reference, const char* compressed,
 		decompressed[index] += (char)(compressed[indexCompressed] >> 2); // the upper 6 bits are the difference which needs to be added to the reference image in order to decompress
 		indexCompressed++;
 	}
+}
+
+int Compressor::CompressImagePNG(const uchar* toBeCompressed, uchar* &compressed)
+{
+	Mat toSendMat = Mat(_rows, _columns, CV_8UC1, const_cast<uchar*>(toBeCompressed));
+
+	vector<uchar> compressedVec((uchar*)_compressed + BYTES_FOR_HEADER, (uchar*)_compressed +_rows * _columns + BYTES_FOR_HEADER);																																	
+																																																																																																	// encode the image to PNG
+	imencode(".png", toSendMat, compressedVec);
+
+	// prepare the header
+	int compressedSize = (int)compressedVec.size();
+	_compressed[0] = compressedSize;
+	_compressed[1] = compressedSize >> BYTE;
+	_compressed[2] = compressedSize >> 2 * BYTE;
+
+	compressed = (uchar*)_compressed;
+
+	return compressedSize + BYTES_FOR_HEADER;
+}
+
+void Compressor::DecompressImagePNG(const uchar* compressed, uchar* decompressed)
+{
+	// reconstruct the length of the compressed image from the header
+	int compressedLength = ((uchar*)_compressed)[0];
+	compressedLength += ((uchar*)_compressed)[1] << BITS_IN_BYTE;
+	compressedLength += ((uchar*)_compressed)[2] << 2 * BITS_IN_BYTE;
+
+	vector<uchar> receivedPNG((uchar*)_compressed + BYTES_FOR_HEADER, (uchar*)_compressed + BYTES_FOR_HEADER + compressedLength);
+	Mat currentFrameMat(_rows, _columns, CV_8UC1, decompressed);
+	imdecode(receivedPNG, CV_LOAD_IMAGE_GRAYSCALE, &currentFrameMat); // how does openCV know that receivedPNG contains a compressed PNG image ? by its content.
 }

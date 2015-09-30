@@ -32,7 +32,7 @@ void distortImage(const uchar* original, uchar* distorted, int rows, int columns
 int main()
 {
 	Mat image;
-	image = imread("Beach.jpeg", CV_LOAD_IMAGE_GRAYSCALE);
+	image = imread("../../Beach.jpeg", CV_LOAD_IMAGE_GRAYSCALE); // path should be relative to VS project file
 	if (image.data == NULL)
 	{
 		cout << "Failed to load image" << endl;
@@ -45,10 +45,16 @@ int main()
 	
 	Compressor compressor(IMAGE_SIZE, IMAGE_SIZE);
 
-	char* compressed = NULL;
+	/*char* compressed = NULL;
 	int compessedLength = compressor.CompressImage(distorted, image.data, compressed);
-	compressor.DecompressImage(distorted, compressed, uncompressed);
+	compressor.DecompressImage(distorted, compressed, uncompressed);*/
 	
+	uchar* compressed = NULL;
+	int compessedLength = compressor.CompressImagePNG(image.data, (compressed));
+	compressor.DecompressImagePNG(compressed, uncompressed);
+
+	cout << "Compressed image has " << compessedLength << " bytes" << endl;
+
 	bool imagesAreEqual = true;
 	for (int row = 0; row < IMAGE_SIZE; row++)
 	{
@@ -60,7 +66,7 @@ int main()
 				cout << "orig: " << image.data[index] << ", uncompressed: " << uncompressed[index] << endl;
 		}
 	}
-
+	
 	cout << "Decompressed is " << (imagesAreEqual ? "" : "not ") << "the same as original" << endl;
 
 	Mat uncompressedImage = Mat(IMAGE_SIZE, IMAGE_SIZE, CV_8UC1, uncompressed);

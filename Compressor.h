@@ -27,6 +27,9 @@ public:
 	int CompressImage(const uchar* reference, const uchar* toBeCompressed, char* &compressed); // no need to allocate memory for toBeCompressed
 	void DecompressImage(const uchar* reference, const char* compressed, uchar* decompressed); // appropriate memory allocation for decompressed assumed
 
+	int CompressImagePNG(const uchar* toBeCompressed, uchar* &compressed);
+	void DecompressImagePNG(const uchar* compressed, uchar* decompressed);
+
 	~Compressor();
 
 private:
